@@ -7,11 +7,11 @@ Features:
 - [Add your specific features]
 
 Check it out:
-GitHub: [https://github.com/Hamad-Ansari/chatbot-project.git]
-Live Demo: [file:///C:/Users/Hammad/Documents/New%20folder/chatbot.html]
+GitHub: [file:///C:/Users/Hammad/Documents/New%20folder/chatbot.html]
+
+Live Demo: [https://github.com/Hamad-Ansari/chatbot-project.git]
 
 #chatbot #webdevelopment #ai #github #huggingface
-
 
 
 
