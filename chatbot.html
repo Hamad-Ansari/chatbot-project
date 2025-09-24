@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pakalign Studio Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4);
+        }
+
+        .chat-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #00ff88;
+            border-radius: 15px;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            align-self: flex-start;
+        }
+
+        .user-message {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            align-self: flex-end;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 25px;
+            color: #fff;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-action {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action:hover {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 5px;
+            color: #00ff88;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #000;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbot-container">
+        <button class="chat-toggle" onclick="toggleChat()">
+            💬
+        </button>
+        
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header">
+                <div>
+                    <strong>Pakalign Studio</strong>
+                    <div style="font-size: 12px; font-weight: normal;">Digital Solutions Expert</div>
+                </div>
+                <button class="close-btn" onclick="toggleChat()">×</button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    👋 Welcome to Pakalign Studio! I'm here to help you with our intelligent digital business solutions.
+                    <div class="quick-actions">
+                        <span class="quick-action" onclick="sendQuickMessage('services')">Our Services</span>
+                        <span class="quick-action" onclick="sendQuickMessage('pricing')">Pricing</span>
+                        <span class="quick-action" onclick="sendQuickMessage('portfolio')">Portfolio</span>
+                        <span class="quick-action" onclick="sendQuickMessage('contact')">Contact Us</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <span>Pakalign is typing</span>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything about our services..." onkeypress="handleKeyPress(event)">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatResponses = {
+            services: {
+                message: "🚀 **Our Core Services:**\n\n• **AI Automation** - Smart business process automation\n• **Web & App Development** - Modern, responsive solutions\n• **UI/UX Design** - User-centered design approach\n• **Branding & Design** - Complete brand identity (88% expertise)\n• **Digital Marketing** - Strategic online presence\n\nWe combine creativity with technology for measurable impact! Which service interests you most?",
+                actions: ['Web Development', 'AI Automation', 'Branding', 'Get Quote']
+            },
+            
+            pricing: {
+                message: "💰 **Pricing Plans:**\n\n**Web Development Basic - $1200** (One-time)\n✅ 5-page modern website design\n✅ CMS integration for easy updates\n✅ SEO-friendly structure\n✅ 1 month free support\n\nWe offer custom pricing for:\n• AI Automation projects\n• Enterprise solutions\n• Ongoing digital marketing\n\nWould you like a personalized quote?",
+                actions: ['Get Custom Quote', 'Schedule Meeting', 'More Details']
+            },
+            
+            portfolio: {
+                message: "🏆 **Our Success Story:**\n\n• **150+ Active Customers** served\n• **96% Business Expertise** rating\n• **88% Branding Design** specialization\n\n**Trusted by:** Crosscode, Desynect, Institute of Professionals, Noxo Media, and more!\n\nWe help businesses succeed with smart digital solutions that combine UI/UX design, branding, web development, AI automation, and SaaS innovation.\n\nWant to see specific case studies?",
+                actions: ['Case Studies', 'Client Testimonials', 'Our Process']
+            },
+            
+            contact: {
+                message: "📞 **Let's Connect!**\n\n**Schedule a Meeting:**\n• 30-minute consultation available\n• Video call via Cal.com integration\n• Flexible timing options\n\n**Get In Touch:**\n• Visit: pakalignstudio.com/contact\n• Use our 'Get In Touch' button\n• Schedule directly through our calendar\n\nReady to transform your digital presence? Let's discuss your project!",
+                actions: ['Schedule Meeting', 'Get In Touch', 'Email Us']
+            },
+
+            'web development': {
+                message: "🌐 **Web Development Services:**\n\n**What We Offer:**\n• Modern, responsive website design\n• CMS integration for easy content management\n• SEO-friendly structure and optimization\n• Mobile-first approach\n• Fast loading and performance optimization\n\n**Starting at $1200** for a complete 5-page website with 1 month free support.\n\nNeed something more complex? We handle custom web applications too!",
+                actions: ['Get Quote', 'See Examples', 'Technical Details']
+            },
+
+            'ai automation': {
+                message: "🤖 **AI Automation Solutions:**\n\n**Transform Your Business With:**\n• Process automation and workflow optimization\n• Intelligent chatbots and customer service\n• Data analysis and reporting automation\n• Custom AI integrations\n• SaaS innovation and development\n\nWe combine creativity with cutting-edge AI technology to give your brand measurable impact in the digital age.\n\nReady to automate your business processes?",
+                actions: ['Learn More', 'Custom Solution', 'Schedule Demo']
+            },
+
+            branding: {
+                message: "🎨 **Branding & Design Excellence:**\n\n**Our 88% Expertise Includes:**\n• Complete brand identity development\n• Logo design and visual guidelines\n• Creative design solutions\n• Brand strategy and positioning\n• Marketing materials and collateral\n\n**Our Approach:**\nWe bring win-win survival strategies to ensure proactive domination, creating artistic and creative designs that evolve with modern trends.\n\nLet's build your brand identity!",
+                actions: ['Brand Package', 'Design Portfolio', 'Brand Strategy']
+            }
+        };
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function sendQuickMessage(type) {
+            addMessage(getQuickMessageText(type), 'user');
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = chatResponses[type];
+                if (response) {
+                    addMessage(response.message, 'bot');
+                    if (response.actions) {
+                        addQuickActions(response.actions);
+                    }
+                }
+            }, 1500);
+        }
+
+        function getQuickMessageText(type) {
+            const texts = {
+                'services': 'Tell me about your services',
+                'pricing': 'What are your pricing plans?',
+                'portfolio': 'Show me your portfolio',
+                'contact': 'How can I contact you?'
+            };
+            return texts[type] || type;
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addQuickActions(actions) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'quick-actions';
+            actionsDiv.style.marginTop = '10px';
+            
+            actions.forEach(action => {
+                const actionSpan = document.createElement('span');
+                actionSpan.className = 'quick-action';
+                actionSpan.textContent = action;
+                actionSpan.onclick = () => handleQuickAction(action);
+                actionsDiv.appendChild(actionSpan);
+            });
+            
+            messagesContainer.appendChild(actionsDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleQuickAction(action) {
+            addMessage(action, 'user');
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                let response = getActionResponse(action);
+                addMessage(response, 'bot');
+            }, 1200);
+        }
+
+        function getActionResponse(action) {
+            const responses = {
+                'Web Development': chatResponses['web development'].message,
+                'AI Automation': chatResponses['ai automation'].message,
+                'Branding': chatResponses.branding.message,
+                'Get Quote': "📋 **Ready for Your Custom Quote?**\n\nTo provide you with an accurate quote, I'll need to understand your project better.\n\n**Next Steps:**\n1. Schedule a 30-minute consultation\n2. Discuss your specific requirements\n3. Receive a detailed proposal within 24 hours\n\nClick 'Schedule Meeting' to get started!",
+                'Schedule Meeting': "📅 **Schedule Your Consultation:**\n\nGreat! You can book a 30-minute meeting with our team:\n\n• Visit: pakalignstudio.com/contact\n• Use our integrated Cal.com calendar\n• Choose your preferred time slot\n• Video call consultation available\n\nOur team will discuss your project requirements and provide personalized recommendations. Looking forward to connecting with you!",
+                'Get In Touch': "📧 **Multiple Ways to Connect:**\n\n• **Website:** pakalignstudio.com\n• **Contact Page:** pakalignstudio.com/contact\n• **Get In Touch Button:** Available on every page\n• **Meeting Scheduler:** Integrated calendar booking\n\nOur team typically responds within 2-4 hours during business hours. What's the best way for us to reach you?",
+                'More Details': "📖 **Detailed Information:**\n\nOur comprehensive approach includes:\n\n**Discovery Phase:** Understanding your business goals\n**Strategy Development:** Tailored solution planning\n**Design & Development:** Creative and technical execution\n**Testing & Launch:** Quality assurance and deployment\n**Support & Maintenance:** Ongoing optimization\n\nEach project is customized to deliver measurable results. Ready to discuss your specific needs?"
+            };
+            
+            return responses[action] || "Thanks for your interest! Our team will get back to you with more information about " + action + ". Would you like to schedule a consultation to discuss this further?";
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, 'user');
+                input.value = '';
+                
+                showTypingIndicator();
+                
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const response = generateResponse(message);
+                    addMessage(response, 'bot');
+                }, 1500);
+            }
+        }
+
+        function generateResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('service') || lowerMessage.includes('what do you do')) {
+                return chatResponses.services.message;
+            } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('quote')) {
+                return chatResponses.pricing.message;
+            } else if (lowerMessage.includes('contact') || lowerMessage.includes('reach') || lowerMessage.includes('meeting')) {
+                return chatResponses.contact.message;
+            } else if (lowerMessage.includes('portfolio') || lowerMessage.includes('work') || lowerMessage.includes('client')) {
+                return chatResponses.portfolio.message;
+            } else if (lowerMessage.includes('web') || lowerMessage.includes('website') || lowerMessage.includes('development')) {
+                return chatResponses['web development'].message;
+            } else if (lowerMessage.includes('ai') || lowerMessage.includes('automation') || lowerMessage.includes('bot')) {
+                return chatResponses['ai automation'].message;
+            } else if (lowerMessage.includes('brand') || lowerMessage.includes('design') || lowerMessage.includes('logo')) {
+                return chatResponses.branding.message;
+            } else if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+                return "👋 Hello! Welcome to Pakalign Studio. We're experts in intelligent digital business solutions. How can I help you transform your digital presence today?";
+            } else {
+                return "🤔 That's a great question! I'd love to help you with that. Our team specializes in:\n\n• AI Automation\n• Web & App Development  \n• UI/UX Design\n• Branding & Design\n• Digital Marketing\n\nWould you like to know more about any of these services, or shall we schedule a consultation to discuss your specific needs?";
+            }
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        // Initialize chat
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Pakalign Studio Chatbot initialized');
+        });
+    </script>
+</body>
+</html>
